@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.2",
         "filament/filament": "^3.2",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.0",
         "laravel/tinker": "^2.9",
         "pxlrbt/filament-excel": "^2.5"
     },
@@ -16,8 +16,8 @@
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.53",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.0",
-        "phpunit/phpunit": "^10.5",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^11.0",
         "spatie/laravel-ignition": "^2.4"
     },
     "autoload": {
@@ -52,7 +52,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "11.x-dev"
+            "dev-master": "12.x-dev"
         },
         "laravel": {
             "dont-discover": []

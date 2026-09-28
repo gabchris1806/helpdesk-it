@@ -3,46 +3,22 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MasterLaporResource\Pages;
-use App\Filament\Resources\MasterLaporResource\RelationManagers;
 use App\Models\MasterLapor;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MasterLaporResource extends Resource
 {
     protected static ?string $model = MasterLapor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
-    
+
     protected static ?string $navigationGroup = 'Master Data';
-    
+
     protected static ?string $navigationLabel = 'Data Karyawan';
-
-    // === AUTHORIZATION ===
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasPermission('master_lapor.view') || auth()->user()->hasPermission('master_lapor.manage');
-    }
-
-    public static function canCreate(): bool
-    {
-        return auth()->user()->hasPermission('master_lapor.manage');
-    }
-
-    public static function canEdit($record): bool
-    {
-        return auth()->user()->hasPermission('master_lapor.manage');
-    }
-
-    public static function canDelete($record): bool
-    {
-        return auth()->user()->hasPermission('master_lapor.manage');
-    }
 
     public static function form(Form $form): Form
     {
@@ -93,9 +69,7 @@ class MasterLaporResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
@@ -108,9 +82,7 @@ class MasterLaporResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

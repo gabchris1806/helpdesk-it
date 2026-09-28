@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendEmailNotification;
+use App\Jobs\SendWhatsAppNotification;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Ticket;
@@ -9,7 +11,6 @@ use App\Support\TicketSecurity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
@@ -17,15 +18,15 @@ class PublicTicketController extends Controller
 {
     public function index(): View
     {
-        $locations = Location::orderBy('name', 'asc')->get();
-        $categories = Category::orderBy('name', 'asc')->get();
+        $locations = Location::orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
 
         return view('landing', compact('locations', 'categories'));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $key = 'kirim-tiket:' . $request->ip();
+        $key = 'kirim-tiket:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 1)) {
             $seconds = RateLimiter::availableIn($key);
@@ -57,59 +58,6 @@ class PublicTicketController extends Controller
         $this->sendWhatsAppNotification($ticket);
 
         return redirect()->route('laporan.sukses', ['uuid' => $ticket->uuid]);
-    }
-
-    private function sendEmailNotification(Ticket $ticket): void
-    {
-        $linkTracking = TicketSecurity::trackingUrl($ticket);
-        $subject = "[IT Helpdesk] Laporan Anda Telah Diterima - #{$ticket->no_tiket}";
-
-        $htmlBody = "
-        <html>
-            <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
-                <div style='max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px;'>
-                    <h2 style='color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;'>
-                        Laporan IT Helpdesk PTPN IV
-                    </h2>
-                    <p>Halo <strong>" . e($ticket->nama_lengkap) . "</strong>,</p>
-                    <p>Terima kasih telah melaporkan kendala IT kepada kami. Laporan Anda telah berhasil diterima dan sedang kami proses.</p>
-                    <div style='background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0;'>
-                        <p style='margin: 5px 0;'><strong>Nomor Tiket:</strong> " . e($ticket->no_tiket) . "</p>
-                        <p style='margin: 5px 0;'><strong>Kategori:</strong> " . e($ticket->topik_bantuan) . "</p>
-                        <p style='margin: 5px 0;'><strong>Status:</strong> Dalam Antrian</p>
-                        <p style='margin: 5px 0;'><strong>Tanggal:</strong> " . e($ticket->created_at->format('d M Y H:i')) . "</p>
-                    </div>
-                    <p style='margin-top: 20px; margin-bottom: 10px;'><strong>Cara Melacak Laporan Anda:</strong></p>
-                    <p>Kunjungi link berikut untuk melihat status terbaru laporan Anda:</p>
-                    <p><a href='" . e($linkTracking) . "' style='background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;'>Lacak Laporan Anda</a></p>
-                    <p style='margin-top: 20px; color: #7f8c8d; font-size: 12px;'>
-                        Atau copy-paste link ini di browser: <br>
-                        " . e($linkTracking) . "
-                    </p>
-                    <hr style='border: none; border-top: 1px solid #ddd; margin: 30px 0;'>
-                    <p style='color: #7f8c8d; font-size: 12px;'>
-                        <strong>Catatan:</strong> Tim kami akan merespons laporan Anda dalam waktu yang telah ditentukan.
-                        Jika ada pertanyaan, hubungi kami melalui WhatsApp atau email.
-                    </p>
-                </div>
-            </body>
-        </html>
-        ";
-
-        try {
-            Mail::html($htmlBody, function ($message) use ($ticket, $subject) {
-                $message->to($ticket->email)
-                    ->subject($subject)
-                    ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-        } catch (\Exception $e) {
-            \Log::error('Email gagal dikirim untuk Ticket #' . $ticket->no_tiket . ': ' . $e->getMessage());
-        }
-    }
-
-    private function sendWhatsAppNotification(Ticket $ticket): void
-    {
-        \App\Jobs\SendWhatsAppNotification::dispatch($ticket);
     }
 
     public function success(string $uuid): View
@@ -177,9 +125,7 @@ class PublicTicketController extends Controller
             return $this->validationResponse($request, 'Tiket ini sudah ditutup permanen dan tidak bisa dibalas lagi.');
         }
 
-        $adminSudahJawab = $ticket->comments()->whereNotNull('user_id')->exists();
-
-        if (! $adminSudahJawab) {
+        if (! $ticket->comments()->whereNotNull('user_id')->exists()) {
             return $this->validationResponse($request, 'Mohon tunggu balasan dari Admin terlebih dahulu sebelum mengirim pesan.');
         }
 
@@ -229,27 +175,13 @@ class PublicTicketController extends Controller
         }
 
         $html = view('partials.chat_history', compact('ticket'))->render();
-        $adminSudahJawab = $ticket->comments()->whereNotNull('user_id')->exists();
 
         return response()->json([
             'html' => $html,
             'status' => $ticket->status,
-            'adminSudahJawab' => $adminSudahJawab,
+            'adminSudahJawab' => $ticket->comments()->whereNotNull('user_id')->exists(),
             'isExpired' => $this->isTicketExpired($ticket),
         ]);
-    }
-
-    private function isTicketExpired(Ticket $ticket): bool
-    {
-        $days = 5;
-
-        if ($ticket->resolutionSla) {
-            $days = (int) $ticket->resolutionSla->response_days;
-        } elseif ($ticket->sla) {
-            $days = (int) $ticket->sla->response_days;
-        }
-
-        return $ticket->created_at->copy()->addDays($days)->isPast() || $ticket->status === 'Closed';
     }
 
     public function uploadTrixImage(Request $request): JsonResponse
@@ -268,7 +200,30 @@ class PublicTicketController extends Controller
 
         $path = $request->file('file')->store('trix-attachments', 'public');
 
-        return response()->json(['url' => asset('storage/' . $path)]);
+        return response()->json(['url' => asset('storage/'.$path)]);
+    }
+
+    private function sendEmailNotification(Ticket $ticket): void
+    {
+        SendEmailNotification::dispatchSync($ticket);
+    }
+
+    private function sendWhatsAppNotification(Ticket $ticket): void
+    {
+        SendWhatsAppNotification::dispatch($ticket);
+    }
+
+    private function isTicketExpired(Ticket $ticket): bool
+    {
+        $days = 5;
+
+        if ($ticket->resolutionSla) {
+            $days = (int) $ticket->resolutionSla->response_days;
+        } elseif ($ticket->sla) {
+            $days = (int) $ticket->sla->response_days;
+        }
+
+        return $ticket->created_at->copy()->addDays($days)->isPast() || $ticket->status === 'Closed';
     }
 
     private function sanitizeTicketPayload(array $validated): array

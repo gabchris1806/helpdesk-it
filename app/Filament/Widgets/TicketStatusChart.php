@@ -4,17 +4,21 @@ namespace App\Filament\Widgets;
 
 use App\Models\Ticket;
 use Filament\Widgets\ChartWidget;
-use Filament\Support\RawJs;
 
 class TicketStatusChart extends ChartWidget
 {
     protected static ?string $heading = 'Status Tiket';
+
     protected static ?int $sort = 2;
+
+    protected static ?string $pollingInterval = null;
+
     protected static string $view = 'filament.widgets.chart-widget-custom';
 
     protected function getData(): array
     {
-        $data = Ticket::selectRaw('status, count(*) as total')
+        $data = Ticket::query()
+            ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
@@ -30,10 +34,10 @@ class TicketStatusChart extends ChartWidget
                         $data['Closed'] ?? 0,
                     ],
                     'backgroundColor' => [
-                        '#fbbf24', // Yellow - Open
-                        '#3b82f6', // Blue - Replied
-                        '#22c55e', // Green - Solved
-                        '#ef4444', // Red - Closed
+                        '#fbbf24',
+                        '#3b82f6',
+                        '#22c55e',
+                        '#ef4444',
                     ],
                     'hoverOffset' => 4,
                 ],

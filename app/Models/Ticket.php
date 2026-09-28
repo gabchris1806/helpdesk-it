@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Carbon\Carbon; // <--- WAJIB TAMBAH INI BUAT HITUNG WAKTU
 
 class Ticket extends Model
 {
@@ -21,6 +22,48 @@ class Ticket extends Model
         'closed_at' => 'datetime',
         'reopened_at' => 'datetime',
     ];
+
+    protected function gambar(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value): array {
+                $decoded = is_string($value) ? json_decode($value, true) : $value;
+
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+
+                if (! is_array($decoded)) {
+                    return [];
+                }
+
+                return collect($decoded)
+                    ->flatten()
+                    ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+                    ->values()
+                    ->all();
+            },
+            set: function (mixed $value): ?array {
+                $decoded = is_string($value) ? json_decode($value, true) : $value;
+
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+
+                if (! is_array($decoded)) {
+                    return null;
+                }
+
+                $paths = collect($decoded)
+                    ->flatten()
+                    ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+                    ->values()
+                    ->all();
+
+                return $paths !== [] ? $paths : null;
+            },
+        );
+    }
 
     protected static function boot()
     {

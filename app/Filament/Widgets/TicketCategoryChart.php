@@ -2,37 +2,40 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Category;
 use App\Models\Ticket;
 use Filament\Widgets\ChartWidget;
 
 class TicketCategoryChart extends ChartWidget
 {
     protected static ?string $heading = 'Tiket per Kategori';
+
     protected static ?int $sort = 3;
+
+    protected static ?string $pollingInterval = null;
+
     protected int | string | array $columnSpan = 'full';
+
     protected static string $view = 'filament.widgets.chart-widget-custom';
-    
-    // Perbesar area canvas agar batang tidak gepeng
+
     protected static ?string $maxHeight = '1200px';
 
     protected function getData(): array
     {
-        // 1. Ambil semua kategori yang mungkin
-        $allCategories = \App\Models\Category::pluck('name')->toArray();
+        $allCategories = Category::query()->pluck('name')->toArray();
 
-        // 2. Ambil hitungan tiket per kategori dari Database
-        $ticketCounts = Ticket::selectRaw('topik_bantuan, count(*) as total')
+        $ticketCounts = Ticket::query()
+            ->selectRaw('topik_bantuan, count(*) as total')
             ->groupBy('topik_bantuan')
             ->pluck('total', 'topik_bantuan')
             ->toArray();
 
-        // 3. Merge data: Pastikan semua kategori ada, jika tidak ada set 0
         $data = [];
+
         foreach ($allCategories as $category) {
             $data[$category] = $ticketCounts[$category] ?? 0;
         }
-        
-        // Urutkan dari yang terbanyak (High to Low)
+
         arsort($data);
 
         return [
@@ -58,7 +61,7 @@ class TicketCategoryChart extends ChartWidget
     {
         return [
             'maintainAspectRatio' => false,
-            'indexAxis' => 'y', // Horizontal Bar
+            'indexAxis' => 'y',
             'plugins' => [
                 'legend' => [
                     'display' => false,
@@ -70,16 +73,16 @@ class TicketCategoryChart extends ChartWidget
             'scales' => [
                 'x' => [
                     'ticks' => [
-                        'precision' => 0, // Integer only
+                        'precision' => 0,
                     ],
                 ],
                 'y' => [
-                    'display' => true, // Tampilkan kembali label defaultnya
+                    'display' => true,
                 ],
             ],
             'layout' => [
                 'padding' => [
-                    'right' => 50, // Ruang untuk label yang 'Outside'
+                    'right' => 50,
                 ],
             ],
         ];

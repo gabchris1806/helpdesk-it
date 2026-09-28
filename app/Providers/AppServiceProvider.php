@@ -2,38 +2,52 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
+use App\Http\Responses\LogoutResponse;
+use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        // Force HTTPS jika sedang menggunakan Tunneling (LocalTunnel/Ngrok)
-        // Atau jika aplikasi mendeteksi protocol https di header
-        if (request()->header('X-Forwarded-Proto') === 'https' || !app()->isLocal()) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+        if ($this->shouldForceHttps()) {
+            URL::forceScheme('https');
         }
-        
-        // HACK: Untuk LocalTunnel, kadang APP_ENV tetap 'local' tapi kita akses via HTTPS.
-        // Kita paksa saja jika URL saat ini mengandung 'https'
-        if (\Illuminate\Support\Str::contains(request()->url(), 'https://')) {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+
+        $this->registerLivewireScriptRoute();
+    }
+
+    private function shouldForceHttps(): bool
+    {
+        if ($this->app->runningInConsole()) {
+            return false;
         }
-          Livewire::setScriptRoute(function ($handle) {
-            $prefix = env("LIVEWIRE_URL_PREFIX");
+
+        $request = request();
+
+        return $request->header('X-Forwarded-Proto') === 'https'
+            || Str::startsWith($request->fullUrl(), 'https://')
+            || ! $this->app->isLocal();
+    }
+
+    private function registerLivewireScriptRoute(): void
+    {
+        $prefix = trim((string) env('LIVEWIRE_URL_PREFIX', ''), '/');
+
+        if ($prefix === '') {
+            return;
+        }
+
+        Livewire::setScriptRoute(function ($handle) use ($prefix) {
             return Route::get("{$prefix}/livewire/livewire.js", $handle);
         });
     }

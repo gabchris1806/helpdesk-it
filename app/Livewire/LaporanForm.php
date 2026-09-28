@@ -118,7 +118,7 @@ class LaporanForm extends Component implements HasForms
         $data['penjelasan_lengkap'] = TicketSecurity::sanitizeRichText($data['penjelasan_lengkap'] ?? '');
 
         if (isset($data['gambar']) && is_array($data['gambar'])) {
-            $data['gambar'] = json_encode(array_values($data['gambar']));
+            $data['gambar'] = array_values($data['gambar']);
         }
 
         $ticket = Ticket::create($data);

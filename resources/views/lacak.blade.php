@@ -253,11 +253,11 @@
                         {!! \\App\\Support\\TicketSecurity::sanitizeRichText($ticket->penjelasan_lengkap) !!}
                     </div>
 
-                    @if($ticket->gambar)
+                    @if(! empty($ticket->gambar))
                         <div class="mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Lampiran</p>
                             <div class="flex gap-3 overflow-x-auto pb-2">
-                                @foreach(json_decode($ticket->gambar, true) ?? [] as $gambar)
+                                @foreach($ticket->gambar as $gambar)
                                     <img src="{{ asset('storage/' . $gambar) }}" onclick="openModal(this.src)" class="h-20 w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm cursor-zoom-in hover:scale-105 transition-transform">
                                 @endforeach
                             </div>
@@ -572,7 +572,6 @@
     </script>
 </body>
 </html>
-
 
 
 

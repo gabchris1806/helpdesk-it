@@ -89,6 +89,8 @@ class LaporanForm extends Component implements HasForms
                             ->multiple()
                             ->image()
                             ->directory('laporan-gambar')
+                            ->disk('public')
+                            ->visibility('public')
                             ->maxSize(5120)
                             ->columnSpanFull(),
                     ]),
@@ -120,6 +122,7 @@ class LaporanForm extends Component implements HasForms
         if (isset($data['gambar']) && is_array($data['gambar'])) {
             $data['gambar'] = array_values($data['gambar']);
         }
+
 
         $ticket = Ticket::create($data);
 

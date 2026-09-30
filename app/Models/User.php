@@ -21,6 +21,8 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
+        'role',
+        'master_lapors_id',
         'permissions',
         'password',
         'theme_mode',
@@ -42,6 +44,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasPermission(string $permission): bool
     {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
         if (in_array('*', $this->permissions ?? [], true)) {
             return true;
         }
@@ -51,7 +57,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function isAdmin(): bool
     {
-        return in_array('*', $this->permissions ?? [], true);
+        return $this->role === 'admin' || in_array('*', $this->permissions ?? [], true);
+    }
+
+    public function masterLapor()
+    {
+        return $this->belongsTo(MasterLapor::class, 'master_lapors_id');
     }
 
     /**
@@ -59,6 +70,6 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return is_array($this->permissions) && count($this->permissions) > 0;
+        return $this->isAdmin();
     }
 }

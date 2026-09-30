@@ -23,12 +23,12 @@ class AdminResetPasswordNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $recipientName = trim((string) ($notifiable->name ?? 'Admin')) ?: 'Admin';
+        $recipientName = trim((string) ($notifiable->name ?? 'Pengguna')) ?: 'Pengguna';
 
         return (new MailMessage())
-            ->subject('Reset Password Admin Helpdesk')
+            ->subject('Reset Password Akun Helpdesk')
             ->greeting("Halo {$recipientName},")
-            ->line('Kami menerima permintaan untuk mereset password akun admin Anda.')
+            ->line('Kami menerima permintaan untuk mereset password akun Helpdesk Anda.')
             ->line('Klik tombol di bawah ini untuk membuat password baru.')
             ->action('Reset Password', $this->resetUrl)
             ->line("Link reset ini berlaku selama {$this->expirationMinutes} menit.")

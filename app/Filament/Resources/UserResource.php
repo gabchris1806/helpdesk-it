@@ -61,9 +61,39 @@ class UserResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
+                        Forms\Components\Select::make('role')
+                            ->label('Role')
+                            ->options(['admin' => 'Admin', 'user' => 'User'])
+                            ->default('user')
+                            ->required()
+                            ->live(),
+                        Forms\Components\Select::make('master_lapors_id')
+                            ->label('Data pelapor / NIK')
+                            ->relationship(
+                                'masterLapor',
+                                'nik',
+                                modifyQueryUsing: function (Builder $query, $record): Builder {
+                                    return $query->where(function (Builder $availableQuery) use ($record): void {
+                                        $availableQuery->whereDoesntHave('user');
+
+                                        if ($record?->master_lapors_id) {
+                                            $availableQuery->orWhere('master_lapors.id', $record->master_lapors_id);
+                                        }
+                                    });
+                                },
+                            )
+                            ->getOptionLabelFromRecordUsing(fn (\App\Models\MasterLapor $record): string => $record->nik.' - '.$record->nama)
+                            ->searchable(['nik', 'nama'])
+                            ->unique(ignoreRecord: true)
+                            ->visible(fn (callable $get): bool => $get('role') === 'user')
+                            ->required(fn (callable $get): bool => $get('role') === 'user'),
                         Forms\Components\TextInput::make('password')
                             ->label('Password')
                             ->password()
+                            ->helperText(fn (string $context): string => $context === 'edit'
+                                ? 'Kosongkan jika password tidak ingin diubah. Isi hanya untuk mengganti password.'
+                                : 'Buat password untuk akun ini.')
+                            ->placeholder(fn (string $context): ?string => $context === 'edit' ? 'Kosongkan jika tidak diubah' : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $context): bool => $context === 'create')
                             ->maxLength(255),

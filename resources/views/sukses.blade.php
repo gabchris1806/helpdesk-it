@@ -103,6 +103,12 @@
                    class="block w-full py-3.5 px-4 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200">
                    Kembali ke Beranda
                 </a>
+
+                @if(auth()->check() && auth()->user()->role === 'user')
+                    <a href="{{ route('user.check-ticket') }}" class="block w-full py-3.5 px-4 rounded-xl border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 font-bold text-sm hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors">Buka Dashboard Tiket</a>
+                @else
+                    <a href="{{ auth()->check() && auth()->user()->isAdmin() ? url('/admin') : route('login') }}" class="block w-full py-3.5 px-4 rounded-xl border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 font-bold text-sm hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors">{{ auth()->check() ? 'Buka Dashboard' : 'Login untuk melihat tiket' }}</a>
+                @endif
             </div>
 
             <p class="mt-8 text-xs text-gray-400 dark:text-gray-500 font-medium">

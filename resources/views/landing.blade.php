@@ -80,11 +80,11 @@
 
                 <div class="flex items-center gap-2">
                     <a
-                        href="{{ route('filament.admin.auth.login') }}"
+                        href="{{ auth()->check() ? (auth()->user()->isAdmin() ? url('/admin') : route('user.check-ticket')) : route('login') }}"
                         class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
                     >
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-7.5a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 006 21h7.5a2.25 2.25 0 002.25-2.25V15m-6-3h11.25m0 0l-3-3m3 3l-3 3"></path></svg>
-                        Login Admin
+                        {{ auth()->check() ? 'Dashboard' : 'Login' }}
                     </a>
                     <button 
                         type="button" 

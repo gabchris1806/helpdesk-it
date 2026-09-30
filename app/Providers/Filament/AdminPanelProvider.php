@@ -33,13 +33,17 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->authGuard('web')
             ->login(CustomLogin::class)
             ->passwordReset(CustomRequestPasswordReset::class, CustomResetPassword::class)
             ->renderHook('panels::body.end', fn () => view('filament.custom-login-style'))
             ->renderHook('panels::head.end', fn (): string => $this->renderAdminAssets())
             ->brandName('IT Helpdesk PTPN IV')
+            ->brandLogo(asset('img/logo-ptpn.png'))
+            ->darkModeBrandLogo(asset('img/logo-ptpn.png'))
+            ->brandLogoHeight('2.75rem')
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::Blue,
             ])
             ->darkMode(true)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

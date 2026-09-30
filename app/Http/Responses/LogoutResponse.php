@@ -10,6 +10,6 @@ class LogoutResponse implements LogoutResponseContract
 {
     public function toResponse($request): RedirectResponse | Redirector
     {
-        return redirect()->route('home');
+        return redirect()->route('login');
     }
 }

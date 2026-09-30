@@ -39,8 +39,8 @@ class AdminPasswordReset
 
     public static function deliveryHint(): string
     {
-        if (app()->environment('local') && config('mail.default') === 'log') {
-            return 'Untuk lokal, link reset disimpan di storage/logs/laravel.log.';
+        if (config('mail.default') === 'log') {
+            return 'Email belum dikirim karena mailer aplikasi memakai mode log. Hubungi administrator untuk memperbarui password.';
         }
 
         return 'Silakan cek inbox email Anda. Jika belum masuk, periksa folder spam.';

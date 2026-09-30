@@ -43,7 +43,7 @@ class Ticket extends Model
                     ->values()
                     ->all();
             },
-            set: function (mixed $value): ?array {
+            set: function (mixed $value): ?string {
                 $decoded = is_string($value) ? json_decode($value, true) : $value;
 
                 if (is_string($decoded)) {
@@ -60,7 +60,10 @@ class Ticket extends Model
                     ->values()
                     ->all();
 
-                return $paths !== [] ? $paths : null;
+                // Attribute mutators must return a scalar here. Returning the
+                // paths array makes Eloquent interpret each numeric key as a
+                // separate database column (for example column `0`).
+                return $paths !== [] ? json_encode($paths) : null;
             },
         );
     }

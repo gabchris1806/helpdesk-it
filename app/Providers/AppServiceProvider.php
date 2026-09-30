@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Http\Responses\LogoutResponse;
+use App\Http\Responses\PasswordResetResponse;
+use Filament\Http\Responses\Auth\Contracts\PasswordResetResponse as PasswordResetResponseContract;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -15,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
+        $this->app->bind(PasswordResetResponseContract::class, PasswordResetResponse::class);
     }
 
     public function boot(): void

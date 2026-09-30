@@ -263,6 +263,11 @@ class PublicTicketController extends Controller
 
     private function hasTicketAccess(Request $request, Ticket $ticket): bool
     {
+        $user = $request->user();
+        if ($user && $user->masterLapor && hash_equals((string) $ticket->nik, (string) $user->masterLapor->nik)) {
+            return true;
+        }
+
         $token = $request->query('token', $request->input('token'));
 
         return TicketSecurity::hasValidAccessToken($ticket, is_string($token) ? $token : null);

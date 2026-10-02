@@ -127,7 +127,6 @@
         box-shadow: none !important;
     }
 
-    body.fi-page-filament-auth-custom-login,
     body.fi-page-filament-auth-custom-request-password-reset,
     body.fi-page-filament-auth-custom-reset-password {
         background-color: #f3f4f6;
@@ -136,7 +135,6 @@
             radial-gradient(ellipse at 90% 90%, rgba(129, 140, 248, .28), transparent 40%);
     }
 
-    .dark body.fi-page-filament-auth-custom-login,
     .dark body.fi-page-filament-auth-custom-request-password-reset,
     .dark body.fi-page-filament-auth-custom-reset-password {
         background-color: #111827;

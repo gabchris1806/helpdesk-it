@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\CustomLogin;
 use App\Filament\Pages\Auth\CustomRequestPasswordReset;
 use App\Filament\Pages\Auth\CustomResetPassword;
 use App\Filament\Pages\Dashboard;
@@ -34,7 +33,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->authGuard('web')
-            ->login(CustomLogin::class)
             ->passwordReset(CustomRequestPasswordReset::class, CustomResetPassword::class)
             ->renderHook('panels::body.end', fn () => view('filament.custom-login-style'))
             ->renderHook('panels::head.end', fn (): string => $this->renderAdminAssets())

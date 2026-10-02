@@ -9,6 +9,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [UserAuthController::class, 'create'])->name('login');
     Route::post('/login', [UserAuthController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
 });
+Route::redirect('/admin/login', '/login')->name('admin.login.redirect');
 Route::post('/logout', [UserAuthController::class, 'destroy'])->middleware('auth')->name('logout');
 Route::middleware(['auth', 'user.role'])->prefix('user')->name('user.')->group(function () {
     Route::get('/check-ticket', [UserTicketController::class, 'index'])->name('check-ticket');
